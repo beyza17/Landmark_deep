@@ -14,7 +14,7 @@ from tqdm import tqdm
 from sklearn.metrics import mean_squared_error
 import torchvision.transforms as T
 from timm import create_model
-from utils import NRRDDatasetDynamicSlices,process_fcsv_to_tensor,split_dataset_by_volume,train_and_evaluate_model
+from utils import NRRDDatasetDynamicSlices,process_fcsv_to_tensor,split_dataset_by_volume,train_and_evaluate_model, test_for_physical,test_for_voxel
 
 if torch.backends.mps.is_available():
     device = torch.device("mps")
@@ -41,11 +41,6 @@ dataset = NRRDDatasetDynamicSlices(folder_path=folder_path, slice_axis=0,transfo
 # Access a sample
 slice_2d, voxel_landmarks, patient_id, slice_idx, spacing, origin, physical_landmarks, labels_landmarks = dataset[0]
 
-# Print the results
-print("Patient ID:", patient_id)
-print("Slice shape:", slice_2d.shape)  # Should be [1, 224, 224]
-print("Voxel landmarks:", voxel_landmarks.shape)
-
 
 
 train_volumes = 10
@@ -57,20 +52,22 @@ train_set, val_set, test_set = split_dataset_by_volume(dataset, train_volumes, v
 
 # Create data loaders for the subsets
 batch_size = 32
-train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True)
-val_loader = DataLoader(val_set, batch_size=batch_size, shuffle=False)
-test_loader = DataLoader(test_set, batch_size=batch_size, shuffle=False)
 
-# Print dataset lengths
-print(f"Train set size: {len(train_set)} slices")
-print(f"Validation set size: {len(val_set)} slices")
-print(f"Test set size: {len(test_set)} slices")
+test_loader = DataLoader(test_set, batch_size=batch_size, shuffle=False)
 
 model = create_model('swin_base_patch4_window7_224', pretrained=True, num_classes=294,in_chans=1)
 model = model.to(device)
 
-results_file = "/work/shared/ngmm/scripts/Beyza_Zayim/Beyza/result_deep/swin_results_physical_2.txt"
+state_dict = torch.load('/work/shared/ngmm/scripts/Beyza_Zayim/Beyza/result_deep/model/swin_best_with_physical_loss.pth', map_location=device)
+
+# Load the weights with strict=False to skip incompatible keys
+model.load_state_dict(state_dict, strict=False)
+
+
+
+results_file = "/work/shared/ngmm/scripts/Beyza_Zayim/Beyza/result_deep/swin_results_physical_test.txt"
+output_folder="/work/shared/ngmm/scripts/Beyza_Zayim/Beyza/predictions2"
 if os.path.exists(results_file):
     os.remove(results_file)  
-train_and_evaluate_model(model, train_loader, val_loader, device, epochs=50, results_file=results_file)
-    
+test_for_physical(model, test_loader, device,results_file=results_file, output_folder=output_folder)# epoch must be 20
+
