@@ -32,23 +32,21 @@ transform = T.Compose([
 ])
 
 # Path to the folder containing NRRD and FCSV files
-folder_path = "/work/shared/ngmm/scripts/Beyza_Zayim/Beyza/data_original/data"
+folder_path = "/work/shared/ngmm/scripts/Beyza_Zayim/Beyza/data_original/data_test"
 
 # Create the dataset
-dataset = NRRDDatasetDynamicSlices(folder_path=folder_path, slice_axis=0,transform=transform)
+test_set = NRRDDatasetDynamicSlices(folder_path=folder_path, slice_axis=0,transform=transform)
 
 
 # Access a sample
-slice_2d, voxel_landmarks, patient_id, slice_idx, spacing, origin, physical_landmarks, labels_landmarks = dataset[0]
+slice_2d, voxel_landmarks, patient_id, slice_idx, spacing, origin, physical_landmarks, labels_landmarks = test_set[0]
+
+# Print the results
+print("Patient ID:", patient_id)
+print("Slice shape:", slice_2d.shape)  # Should be [1, 224, 224]
+print("Voxel landmarks:", voxel_landmarks.shape)
 
 
-
-train_volumes = 10
-val_volumes = 2
-test_volumes = 1
-
-# Split the dataset based on volumes
-train_set, val_set, test_set = split_dataset_by_volume(dataset, train_volumes, val_volumes, test_volumes)
 
 # Create data loaders for the subsets
 batch_size = 32
@@ -58,16 +56,16 @@ test_loader = DataLoader(test_set, batch_size=batch_size, shuffle=False)
 model = create_model('swin_base_patch4_window7_224', pretrained=True, num_classes=294,in_chans=1)
 model = model.to(device)
 
-state_dict = torch.load('/work/shared/ngmm/scripts/Beyza_Zayim/Beyza/result_deep/model/swin_best_with_physical_loss.pth', map_location=device)
+state_dict = torch.load('/work/shared/ngmm/scripts/Beyza_Zayim/Beyza/result_deep/model/swin_best_with_physical_loss_3.pth', map_location=device)
 
 # Load the weights with strict=False to skip incompatible keys
 model.load_state_dict(state_dict, strict=False)
 
 
 
-results_file = "/work/shared/ngmm/scripts/Beyza_Zayim/Beyza/result_deep/swin_results_physical_test.txt"
-output_folder="/work/shared/ngmm/scripts/Beyza_Zayim/Beyza/predictions2"
+results_file = "/work/shared/ngmm/scripts/Beyza_Zayim/Beyza/result_deep/swin_results_physical_test_3.txt"
+output_folder="/work/shared/ngmm/scripts/Beyza_Zayim/Beyza/predictions3"
 if os.path.exists(results_file):
     os.remove(results_file)  
-test_for_physical(model, test_loader, device,results_file=results_file, output_folder=output_folder)# epoch must be 20
+test_for_physical(model, test_loader, device,results_file=results_file, output_folder=output_folder)
 

@@ -447,7 +447,7 @@ def train_and_evaluate_model(
             # Save the best model
             if avg_val_loss < best_loss:
                 best_loss = avg_val_loss
-                torch.save(model.state_dict(), "/work/shared/ngmm/scripts/Beyza_Zayim/Beyza/result_deep/model/swin_best_with_physical_loss_2.pth")
+                torch.save(model.state_dict(), "/work/shared/ngmm/scripts/Beyza_Zayim/Beyza/result_deep/model/swin_best_with_physical_loss_3.pth")
 
             
             # Compute and log additional metrics (e.g., MSE)

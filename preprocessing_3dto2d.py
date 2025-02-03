@@ -50,27 +50,27 @@ print("Voxel landmarks:", voxel_landmarks.shape)
 
 train_volumes = 10
 val_volumes = 2
-test_volumes = 1
+
 
 # Split the dataset based on volumes
-train_set, val_set, test_set = split_dataset_by_volume(dataset, train_volumes, val_volumes, test_volumes)
+train_set, val_set = split_dataset_by_volume(dataset, train_volumes, val_volumes)
 
 # Create data loaders for the subsets
 batch_size = 32
 train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True)
 val_loader = DataLoader(val_set, batch_size=batch_size, shuffle=False)
-test_loader = DataLoader(test_set, batch_size=batch_size, shuffle=False)
+
 
 # Print dataset lengths
 print(f"Train set size: {len(train_set)} slices")
 print(f"Validation set size: {len(val_set)} slices")
-print(f"Test set size: {len(test_set)} slices")
+
 
 model = create_model('swin_base_patch4_window7_224', pretrained=True, num_classes=294,in_chans=1)
 model = model.to(device)
 
-results_file = "/work/shared/ngmm/scripts/Beyza_Zayim/Beyza/result_deep/swin_results_physical_2.txt"
+results_file = "/work/shared/ngmm/scripts/Beyza_Zayim/Beyza/result_deep/swin_results_physical_3.txt"
 if os.path.exists(results_file):
     os.remove(results_file)  
-train_and_evaluate_model(model, train_loader, val_loader, device, epochs=50, results_file=results_file)
+train_and_evaluate_model(model, train_loader, val_loader, device, epochs=80, results_file=results_file)
     
